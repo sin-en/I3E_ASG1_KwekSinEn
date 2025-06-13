@@ -10,12 +10,11 @@ public class CrystalBehaviour : MonoBehaviour
     Material highlightMaterial;
     [SerializeField]
     private AudioClip collectSFX;
-    private AudioSource audioSource;
     private bool isCollected = false;
     void Start()
     {
         crystalRenderer = GetComponent<MeshRenderer>();
-        audioSource = GetComponent<AudioSource>();
+        
     }
 
     public void Collect(PlayerBehaviour player)
@@ -26,9 +25,9 @@ public class CrystalBehaviour : MonoBehaviour
 
         player.ModifyScore(points);
         player.CollectibleCollected();
-        if (audioSource != null && collectSFX != null)
+        if (collectSFX != null)
         {
-            audioSource.PlayOneShot(collectSFX);
+            AudioSource.PlayClipAtPoint(collectSFX, transform.position);
         }
         Destroy(gameObject, 0.1f);
     }
@@ -57,3 +56,5 @@ public class CrystalBehaviour : MonoBehaviour
         points = newPoints;
     }
 }
+
+

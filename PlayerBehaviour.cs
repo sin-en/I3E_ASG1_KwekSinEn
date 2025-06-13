@@ -12,7 +12,7 @@ public class PlayerBehaviour : MonoBehaviour
     private BookBehaviour currentBook = null;
     private DoorBehaviour currentDoor = null;
     private int collectiblesCollected = 0;
-    private int totalCollectibles = 8;
+    private int totalCollectibles = 12;
 
     void Start()
     {

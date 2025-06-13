@@ -1,52 +1,22 @@
 using UnityEngine;
 
-public class DoorBehaviour : MonoBehaviour
+public class BookBehaviour : MonoBehaviour
 {
-    private bool isOpen = false;
-    private bool isLocked = true;
-    private int requiredPoints = 8;
-    private bool requiresBook = true;
-    private AudioClip openDoorSFX;
-    
-
-    public void Interact(PlayerBehaviour player)
+    [SerializeField]
+    private AudioClip collectSFX;
+    private bool isCollected = false;
+    public void Collect(PlayerBehaviour player)
     {
-        if (isOpen)
+        if (isCollected) return;
+        isCollected = true;
+        Debug.Log("Book collected!");
+
+        
+        player.hasBook = true; 
+        if (collectSFX != null)
         {
-            Vector3 doorRotation = transform.eulerAngles;
-            doorRotation.y -= 90f;
-            transform.eulerAngles = doorRotation;
-            isOpen = false;
-            Debug.Log("Door closed.");
+            AudioSource.PlayClipAtPoint(collectSFX, transform.position);
         }
-        else
-        {
-            bool canOpen = !isLocked || (player.points >= requiredPoints && (!requiresBook || player.hasBook));
-
-            if (canOpen)
-            {
-                Vector3 doorRotation = transform.eulerAngles;
-                doorRotation.y += 90f;
-                transform.eulerAngles = doorRotation;
-                isOpen = true;
-                isLocked = false; // Unlock the door after opening
-                Debug.Log("Door opened.");
-
-                AudioSource.PlayClipAtPoint(openDoorSFX, transform.position);
-            }
-            else
-            {
-                Debug.Log("Door is locked.");
-                if (player.points < requiredPoints)
-                {
-                    Debug.Log($"Need {requiredPoints} points to open the door.");
-                }
-
-                if (requiresBook && !player.hasBook)
-                {
-                    Debug.Log("Book is required to open this door.");
-                }
-            }
-        }
+        Destroy(gameObject);
     }
 }

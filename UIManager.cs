@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -11,25 +10,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI congratulationsText;
     [SerializeField] private AudioClip congratulationsSFX;
 
-    private AudioSource audioSource;
 
-    void Start()
-    {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-        }
-        if (congratulationsPanel != null)
-            congratulationsPanel.SetActive(false);
-
-        if (interactionText != null)
-            interactionText.gameObject.SetActive(false);
-            
-        UpdateScore(0);
-        UpdateCollectibles(0, 8);
-    }
 
     public void UpdateScore(int score)
     {
@@ -71,9 +52,9 @@ public class UIManager : MonoBehaviour
             congratulationsText.text = "Congratulations!\nYou collected all items!";
         }
 
-        if (congratulationsSFX != null && audioSource != null)
+        if (congratulationsSFX != null)
         {
-            audioSource.PlayOneShot(congratulationsSFX);
+            AudioSource.PlayClipAtPoint(congratulationsSFX, Camera.main.transform.position);
         }
 
         Debug.Log("All collectibles collected! Congratulations!");

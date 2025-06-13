@@ -1,81 +1,58 @@
 using UnityEngine;
 
-public class DoorBehaviour : MonoBehaviour
+public class CrystalBehaviour : MonoBehaviour
 {
+    int points = 0;
+    private Renderer crystalRenderer;
     [SerializeField]
-    private bool isOpen = false;
+    Material originalMaterial;
     [SerializeField]
-    private bool isLocked = true;
+    Material highlightMaterial;
     [SerializeField]
-    private float openAngle = 90f;
-    [SerializeField]
-    private int requiredPoints = 8;
-    [SerializeField]
-    private bool requiresBook = true;
-    [SerializeField]
-    private float animationSpeed = 2f;
-    
-    private Quaternion closedRotation;
-    private Quaternion openRotation;
-    private bool isAnimating = false;
-
+    private AudioClip collectSFX;
+    private bool isCollected = false;
     void Start()
     {
-        // Store initial and target rotations
-        closedRotation = transform.rotation;
-        openRotation = closedRotation * Quaternion.Euler(0, openAngle, 0);
+        crystalRenderer = GetComponent<MeshRenderer>();
+        
     }
 
-    void Update()
+    public void Collect(PlayerBehaviour player)
     {
-        // Smooth door animation
-        if (isAnimating)
+        if (isCollected) return;
+        isCollected = true;
+        Debug.Log("Crystal collected!");
+
+        player.ModifyScore(points);
+        player.CollectibleCollected();
+        if (collectSFX != null)
         {
-            Quaternion targetRotation = isOpen ? openRotation : closedRotation;
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, animationSpeed * Time.deltaTime);
-            
-            if (Quaternion.Angle(transform.rotation, targetRotation) < 1f)
-            {
-                transform.rotation = targetRotation;
-                isAnimating = false;
-            }
+            AudioSource.PlayClipAtPoint(collectSFX, transform.position);
+        }
+        Destroy(gameObject, 0.1f);
+    }
+
+    public void Highlight()
+    {
+        if (highlightMaterial != null)
+        {
+            crystalRenderer.material = highlightMaterial;
         }
     }
 
-    public void Interact(PlayerBehaviour player)
+    public void Unhighlight()
     {
-        if (isAnimating) return; // Prevent interaction during animation
-
-        if (isOpen)
+        if (crystalRenderer != null)
         {
-            Debug.Log("Closing door...");
-            isOpen = false;
-            isAnimating = true;
+            crystalRenderer.material = originalMaterial;
         }
-        else
-        {
-            bool canOpen = !isLocked || (player.points >= requiredPoints && (!requiresBook || player.hasBook));
-            
-            if (canOpen)
-            {
-                Debug.Log("Opening door...");
-                isOpen = true;
-                isAnimating = true;
-                if (isLocked)
-                {
-                    isLocked = false;
-                    Debug.Log("Door unlocked!");
-                }
-            }
-            else
-            {
-                string message = "Door is locked! ";
-                if (player.points < requiredPoints) 
-                    message += $"Need {requiredPoints - player.points} more points. ";
-                if (requiresBook && !player.hasBook) 
-                    message += "Need the book.";
-                Debug.Log(message);
-            }
-        }
+    }
+    public int GetPoints()
+    {
+        return points;
+    }
+    public void SetPoints(int newPoints)
+    {
+        points = newPoints;
     }
 }

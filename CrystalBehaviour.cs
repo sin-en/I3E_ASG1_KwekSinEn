@@ -2,47 +2,58 @@ using UnityEngine;
 
 public class CrystalBehaviour : MonoBehaviour
 {
-    // Coin value that will be added to the player's score
-    [SerializeField]
     int points = 0;
     private Renderer crystalRenderer;
-    private Color originalColor;
-    public Color highlightColor = Color.yellow; // Changeable in Inspector
-
+    [SerializeField]
+    Material originalMaterial;
+    [SerializeField]
+    Material highlightMaterial;
+    [SerializeField]
+    private AudioClip collectSFX;
+    private AudioSource audioSource;
+    private bool isCollected = false;
     void Start()
     {
-        // Get the Renderer component of the coin
-        crystalRenderer = GetComponent<Renderer>();
-        // Store the original color of the coin
-        crystalRenderer.material = new Material(crystalRenderer.material);
-        originalColor = crystalRenderer.material.color;
+        crystalRenderer = GetComponent<MeshRenderer>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     public void Collect(PlayerBehaviour player)
     {
-        // Logic for collecting the coin
+        if (isCollected) return;
+        isCollected = true;
         Debug.Log("Crystal collected!");
 
         player.ModifyScore(points);
-
-        Destroy(gameObject);
+        player.CollectibleCollected();
+        if (audioSource != null && collectSFX != null)
+        {
+            audioSource.PlayOneShot(collectSFX);
+        }
+        Destroy(gameObject, 0.1f);
     }
 
-     public void Highlight()
+    public void Highlight()
     {
-        if (crystalRenderer != null)
+        if (highlightMaterial != null)
         {
-            crystalRenderer.material.color = highlightColor;
+            crystalRenderer.material = highlightMaterial;
         }
     }
 
-    // Remove the highlight from the coin
     public void Unhighlight()
     {
         if (crystalRenderer != null)
         {
-            crystalRenderer.material.color = originalColor;
+            crystalRenderer.material = originalMaterial;
         }
     }
-
+    public int GetPoints()
+    {
+        return points;
+    }
+    public void SetPoints(int newPoints)
+    {
+        points = newPoints;
+    }
 }

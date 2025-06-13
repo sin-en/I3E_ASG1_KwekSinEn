@@ -37,6 +37,7 @@ public class HazardBehaviour : MonoBehaviour
                     audioSource.PlayOneShot(hazardSFX);
                 }
             }
+            player.DieAndRespawn();
         }
     }
 }

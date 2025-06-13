@@ -2,29 +2,80 @@ using UnityEngine;
 
 public class DoorBehaviour : MonoBehaviour
 {
+    [SerializeField]
     private bool isOpen = false;
+    [SerializeField]
+    private bool isLocked = true;
+    [SerializeField]
+    private float openAngle = 90f;
+    [SerializeField]
+    private int requiredPoints = 8;
+    [SerializeField]
+    private bool requiresBook = true;
+    [SerializeField]
+    private float animationSpeed = 2f;
+    
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
+    private bool isAnimating = false;
+
+    void Start()
+    {
+        // Store initial and target rotations
+        closedRotation = transform.rotation;
+        openRotation = closedRotation * Quaternion.Euler(0, openAngle, 0);
+    }
+
+    void Update()
+    {
+        // Smooth door animation
+        if (isAnimating)
+        {
+            Quaternion targetRotation = isOpen ? openRotation : closedRotation;
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, animationSpeed * Time.deltaTime);
+            
+            if (Quaternion.Angle(transform.rotation, targetRotation) < 1f)
+            {
+                transform.rotation = targetRotation;
+                isAnimating = false;
+            }
+        }
+    }
 
     public void Interact(PlayerBehaviour player)
     {
+        if (isAnimating) return; // Prevent interaction during animation
+
         if (isOpen)
         {
             Debug.Log("Closing door...");
-            Vector3 doorRotation = transform.rotation.eulerAngles;
-            doorRotation.y -= 90f;
-            transform.eulerAngles = doorRotation;
             isOpen = false;
-        }
-        else if (player.points >= 8 && player.hasBook)
-        {
-            Debug.Log("Opening door...");
-            Vector3 doorRotation = transform.rotation.eulerAngles;
-            doorRotation.y += 90f;
-            transform.eulerAngles = doorRotation;
-            isOpen = true;
+            isAnimating = true;
         }
         else
         {
-            Debug.Log("You need at least 8 points and the book to open the door.");
+            bool canOpen = !isLocked || (player.points >= requiredPoints && (!requiresBook || player.hasBook));
+            
+            if (canOpen)
+            {
+                Debug.Log("Opening door...");
+                isOpen = true;
+                isAnimating = true;
+                if (isLocked)
+                {
+                    isLocked = false;
+                    Debug.Log("Door unlocked!");
+                }
+            }
+            else
+            {
+                string message = "Door is locked! ";
+                if (player.points < requiredPoints) 
+                    message += $"Need {requiredPoints - player.points} more points. ";
+                if (requiresBook && !player.hasBook) 
+                    message += "Need the book.";
+                Debug.Log(message);
+            }
         }
     }
 }

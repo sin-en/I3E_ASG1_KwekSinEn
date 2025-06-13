@@ -1,11 +1,16 @@
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
-public class HazardBehaviour : MonoBehaviour
+public class UIManager : MonoBehaviour
 {
-    [SerializeField]
-    private AudioClip hazardSFX;
-    [SerializeField]
-    private AudioClip ambientSFX;
+    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI collectiblesText;
+    [SerializeField] private TextMeshProUGUI interactionText;
+    [SerializeField] private GameObject congratulationsPanel;
+    [SerializeField] private TextMeshProUGUI congratulationsText;
+    [SerializeField] private AudioClip congratulationsSFX;
+
     private AudioSource audioSource;
 
     void Start()
@@ -14,29 +19,63 @@ public class HazardBehaviour : MonoBehaviour
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
         }
-        if (ambientSFX != null)
+        if (congratulationsPanel != null)
+            congratulationsPanel.SetActive(false);
+
+        if (interactionText != null)
+            interactionText.gameObject.SetActive(false);
+            
+        UpdateScore(0);
+        UpdateCollectibles(0, 8);
+    }
+
+    public void UpdateScore(int score)
+    {
+        if (scoreText != null)
         {
-            audioSource.clip = ambientSFX;
-            audioSource.loop = true;
-            audioSource.Play();
+            scoreText.text = "Score: " + score.ToString();
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    public void UpdateCollectibles(int collected, int total)
     {
-        if (other.CompareTag("Player"))
+        if (collectiblesText != null)
         {
-            PlayerBehaviour player = other.GetComponent<PlayerBehaviour>();
-            if (player != null)
-            {
-                Debug.Log("Player entered hazard");
+            collectiblesText.text = $"Collectibles: {collected}/{total} (Remaining: {total - collected})";
+        }
+    }
 
-                if (hazardSFX != null)
-                {
-                    audioSource.PlayOneShot(hazardSFX);
-                }
+    public void ShowInteractionPrompt(bool show, string message = "Press E to interact")
+    {
+        if (interactionText != null)
+        {
+            interactionText.gameObject.SetActive(show);
+            if (show)
+            {
+                interactionText.text = message;
             }
         }
+    }
+
+    public void ShowCongratulations()
+    {
+        if (congratulationsPanel != null)
+        {
+            congratulationsPanel.SetActive(true);
+        }
+
+        if (congratulationsText != null)
+        {
+            congratulationsText.text = "Congratulations!\nYou collected all items!";
+        }
+
+        if (congratulationsSFX != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(congratulationsSFX);
+        }
+
+        Debug.Log("All collectibles collected! Congratulations!");
     }
 }

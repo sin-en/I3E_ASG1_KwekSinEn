@@ -6,20 +6,21 @@ public class HazardBehaviour : MonoBehaviour
     private AudioClip hazardSFX;
     [SerializeField]
     private AudioClip ambientSFX;
-    private AudioSource audioSource;
+    private AudioSource ambientSource;
 
     void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
         if (ambientSFX != null)
         {
-            audioSource.clip = ambientSFX;
-            audioSource.loop = true;
-            audioSource.Play();
+           ambientSource = GetComponent<AudioSource>();
+            if (ambientSource == null)
+            {
+                ambientSource = gameObject.AddComponent<AudioSource>();
+            }
+            ambientSource.clip = ambientSFX;
+            ambientSource.loop = true;
+            ambientSource.playOnAwake = true;
+            ambientSource.Play();
         }
     }
 
@@ -34,10 +35,9 @@ public class HazardBehaviour : MonoBehaviour
 
                 if (hazardSFX != null)
                 {
-                    audioSource.PlayOneShot(hazardSFX);
+                    AudioSource.PlayClipAtPoint(hazardSFX, transform.position);
                 }
             }
-            player.DieAndRespawn();
         }
     }
 }

@@ -1,58 +1,52 @@
 using UnityEngine;
 
-public class CrystalBehaviour : MonoBehaviour
+public class DoorBehaviour : MonoBehaviour
 {
-    int points = 0;
-    private Renderer crystalRenderer;
-    [SerializeField]
-    Material originalMaterial;
-    [SerializeField]
-    Material highlightMaterial;
-    [SerializeField]
-    private AudioClip collectSFX;
-    private bool isCollected = false;
-    void Start()
-    {
-        crystalRenderer = GetComponent<MeshRenderer>();
-        
-    }
+    private bool isOpen = false;
+    private bool isLocked = true;
+    private int requiredPoints = 8;
+    private bool requiresBook = true;
+    private AudioClip openDoorSFX;
+    
 
-    public void Collect(PlayerBehaviour player)
+    public void Interact(PlayerBehaviour player)
     {
-        if (isCollected) return;
-        isCollected = true;
-        Debug.Log("Crystal collected!");
-
-        player.ModifyScore(points);
-        player.CollectibleCollected();
-        if (collectSFX != null)
+        if (isOpen)
         {
-            AudioSource.PlayClipAtPoint(collectSFX, transform.position);
+            Vector3 doorRotation = transform.eulerAngles;
+            doorRotation.y -= 90f;
+            transform.eulerAngles = doorRotation;
+            isOpen = false;
+            Debug.Log("Door closed.");
         }
-        Destroy(gameObject, 0.1f);
-    }
-
-    public void Highlight()
-    {
-        if (highlightMaterial != null)
+        else
         {
-            crystalRenderer.material = highlightMaterial;
-        }
-    }
+            bool canOpen = !isLocked || (player.points >= requiredPoints && (!requiresBook || player.hasBook));
 
-    public void Unhighlight()
-    {
-        if (crystalRenderer != null)
-        {
-            crystalRenderer.material = originalMaterial;
+            if (canOpen)
+            {
+                Vector3 doorRotation = transform.eulerAngles;
+                doorRotation.y += 90f;
+                transform.eulerAngles = doorRotation;
+                isOpen = true;
+                isLocked = false; // Unlock the door after opening
+                Debug.Log("Door opened.");
+
+                AudioSource.PlayClipAtPoint(openDoorSFX, transform.position);
+            }
+            else
+            {
+                Debug.Log("Door is locked.");
+                if (player.points < requiredPoints)
+                {
+                    Debug.Log($"Need {requiredPoints} points to open the door.");
+                }
+
+                if (requiresBook && !player.hasBook)
+                {
+                    Debug.Log("Book is required to open this door.");
+                }
+            }
         }
-    }
-    public int GetPoints()
-    {
-        return points;
-    }
-    public void SetPoints(int newPoints)
-    {
-        points = newPoints;
     }
 }
